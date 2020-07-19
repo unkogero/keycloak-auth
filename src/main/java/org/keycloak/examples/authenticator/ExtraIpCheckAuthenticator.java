@@ -62,6 +62,25 @@ public class ExtraIpCheckAuthenticator implements Authenticator {
         String remoteAddr = context.getConnection().getRemoteAddr();
         int remotePort = context.getConnection().getRemotePort();
 
+        List<String> xforwaredfor = context.getHttpRequest().getHttpHeaders().getRequestHeader("X-Forwarded-For");
+        for( String str : xforwaredfor ){
+            logger.debug("[TEST]xforwaredfor:" + str);
+        }
+
+        List<String> xrealip = context.getHttpRequest().getHttpHeaders().getRequestHeader("X-Real-IP");
+        for( String str : xrealip ){
+            logger.debug("[TEST]xrealip:" + str);
+        }
+
+        MultivaluedMap<String, String> requestHeaders = context.getHttpRequest().getHttpHeaders().getRequestHeaders();
+        for (Map.Entry<String, List<String>> entry : requestHeaders.entrySet()) {
+            String key = entry.getKey();
+            for (String value : entry.getValue()) {
+                String headerEntry = key.trim() + ": " + value.trim();
+                logger.debug("[TEST]headerEntry:" + headerEntry);
+            }
+        }
+
         logger.debug("[TEST]local addr:" + localAddr + " port:" + String.valueOf(localPort));
         logger.debug("[TEST]Remote addr:" + remoteAddr + " port:" + String.valueOf(remotePort));
         AuthenticatorConfigModel config = context.getAuthenticatorConfig();
@@ -80,6 +99,16 @@ public class ExtraIpCheckAuthenticator implements Authenticator {
                 chkIp = true;
                 break;
             }
+
+            for( String ip : xrealip ){
+                if( ip.equals(str) ){
+                    logger.debug("[TEST]check true");
+                    chkIp = true;
+                    break;
+                }
+            }
+
+            if(chkIp) break;
         }
 
         ////
